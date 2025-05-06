@@ -1,64 +1,60 @@
-import React, { Component } from 'react';
-import './App.css';
+import React, { useState } from 'react';
 
-class App extends Component {
-  constructor(props) {
-    super(props);
-    // Initialisation de l'état
-    this.state = {
-      personne: {
-        fullName: 'John Doe',
-        bio: 'Développeur Web passionné par React.',
-        imgSrc: 'https://randomuser.me/api/portraits/men/75.jpg',
-        profession: 'Développeur Frontend'
-      },
-      show: false,
-      timeElapsed: 0
-    };
-  }
+const MovieCard = ({ movie }) => (
+  <div>
+    <img src={movie.posterURL} alt={movie.title} />
+    <h3>{movie.title}</h3>
+    <p>{movie.description}</p>
+    <p>Rating: {movie.rating}</p>
+  </div>
+);
 
-  // Méthode pour basculer l'état 'show'
-  toggleShow = () => {
-    this.setState(prevState => ({ show: !prevState.show }));
+const MovieList = ({ movies }) => (
+  <div>
+    {movies.map((movie, index) => (
+      <MovieCard key={index} movie={movie} />
+    ))}
+  </div>
+);
+
+const Filter = ({ setTitle, setRating }) => (
+  <div>
+    <input 
+      type="text" 
+      placeholder="Search by title"
+      onChange={(e) => setTitle(e.target.value)} 
+    />
+    <input 
+      type="number" 
+      placeholder="Search by rating"
+      onChange={(e) => setRating(e.target.value)} 
+    />
+  </div>
+);
+
+const App = () => {
+  const [movies, setMovies] = useState([]);
+  const [title, setTitle] = useState('');
+  const [rating, setRating] = useState('');
+
+  const addMovie = (newMovie) => {
+    setMovies([...movies, newMovie]);
   };
 
-  // Utiliser setInterval pour calculer le temps écoulé
-  componentDidMount() {
-    this.interval = setInterval(() => {
-      this.setState(prevState => ({
-        timeElapsed: prevState.timeElapsed + 1
-      }));
-    }, 1000); // 1 seconde
-  }
+  const filteredMovies = movies.filter((movie) => 
+    movie.title.toLowerCase().includes(title.toLowerCase()) && 
+    (rating ? movie.rating >= rating : true)
+  );
 
-  // Nettoyer l'intervalle lorsque le composant est démonté
-  componentWillUnmount() {
-    clearInterval(this.interval);
-  }
-
-  render() {
-    const { personne, show, timeElapsed } = this.state;
-
-    return (
-      <div className="App">
-        <h1>Profil de la Personne</h1>
-        <button onClick={this.toggleShow}>
-          {show ? 'Masquer le Profil' : 'Afficher le Profil'}
-        </button>
-
-        {show && (
-          <div>
-            <img src={personne.imgSrc} alt={personne.fullName} />
-            <h2>{personne.fullName}</h2>
-            <p>{personne.bio}</p>
-            <p><strong>{personne.profession}</strong></p>
-          </div>
-        )}
-
-        <p>Temps écoulé depuis le montage : {timeElapsed} secondes</p>
-      </div>
-    );
-  }
-}
+  return (
+    <div>
+      <Filter setTitle={setTitle} setRating={setRating} />
+      <MovieList movies={filteredMovies} />
+      <button onClick={() => addMovie({ title: 'New Movie', description: 'A great movie', posterURL: 'https://via.placeholder.com/150', rating: 5 })}>
+        Add Movie
+      </button>
+    </div>
+  );
+};
 
 export default App;
